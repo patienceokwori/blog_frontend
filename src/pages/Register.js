@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Register.css";
 
-// Use environment variable for API URL
-// In Vercel: set REACT_APP_API_URL = https://backend-blog-yk2f.onrender.com
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const Register = () => {
@@ -29,24 +27,33 @@ const Register = () => {
     setMessage("");
     setError("");
 
-    // ✅ Check if passwords match before sending
+    // Simple frontend validation for password match
     if (formData.password !== formData.password2) {
-      setError("❌ Passwords do not match");
+      setError("❌ Passwords do not match.");
       return;
     }
 
     try {
       const res = await axios.post(
         `${API_URL}/api/auth/register/`,
-        formData,
+        {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        },
         { headers: { "Content-Type": "application/json" } }
       );
       setMessage("✅ Registration successful! You can now log in.");
+      setFormData({
+        username: "",
+        email: "",
+        password: "",
+        password2: "",
+      });
       console.log("Server Response:", res.data);
     } catch (err) {
-      if (err.response?.data) {
-        // ✅ Show errors nicely instead of raw JSON
-        setError(Object.values(err.response.data).flat().join(" "));
+      if (err.response && err.response.data) {
+        setError(JSON.stringify(err.response.data));
       } else {
         setError("❌ Something went wrong. Please try again.");
       }
@@ -55,50 +62,58 @@ const Register = () => {
 
   return (
     <div className="register-container">
-      <form onSubmit={handleSubmit} className="register-form">
+      <form onSubmit={handleSubmit} className="register-form" autoComplete="on">
         <h2>Create Account</h2>
 
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
 
-        <label>Username</label>
+        <label htmlFor="username">Username</label>
         <input
           type="text"
+          id="username"
           name="username"
           placeholder="Enter username"
           value={formData.username}
           onChange={handleChange}
           required
+          autoComplete="username"
         />
 
-        <label>Email</label>
+        <label htmlFor="email">Email</label>
         <input
           type="email"
+          id="email"
           name="email"
           placeholder="Enter email"
           value={formData.email}
           onChange={handleChange}
           required
+          autoComplete="email"
         />
 
-        <label>Password</label>
+        <label htmlFor="password">Password</label>
         <input
           type="password"
+          id="password"
           name="password"
           placeholder="Enter password"
           value={formData.password}
           onChange={handleChange}
           required
+          autoComplete="new-password"
         />
 
-        <label>Confirm Password</label>
+        <label htmlFor="password2">Confirm Password</label>
         <input
           type="password"
+          id="password2"
           name="password2"
           placeholder="Confirm password"
           value={formData.password2}
           onChange={handleChange}
           required
+          autoComplete="new-password"
         />
 
         <button type="submit">Register</button>
