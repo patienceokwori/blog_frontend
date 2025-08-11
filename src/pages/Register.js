@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Register.css";
 
+// Use environment variable for API URL
+// In Vercel: set REACT_APP_API_URL = https://backend-blog-yk2f.onrender.com
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
 const Register = () => {
   const [formData, setFormData] = useState({
     username: "",
@@ -25,17 +29,24 @@ const Register = () => {
     setMessage("");
     setError("");
 
+    // ✅ Check if passwords match before sending
+    if (formData.password !== formData.password2) {
+      setError("❌ Passwords do not match");
+      return;
+    }
+
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/auth/register/",
+        `${API_URL}/api/auth/register/`,
         formData,
         { headers: { "Content-Type": "application/json" } }
       );
       setMessage("✅ Registration successful! You can now log in.");
       console.log("Server Response:", res.data);
     } catch (err) {
-      if (err.response && err.response.data) {
-        setError(JSON.stringify(err.response.data));
+      if (err.response?.data) {
+        // ✅ Show errors nicely instead of raw JSON
+        setError(Object.values(err.response.data).flat().join(" "));
       } else {
         setError("❌ Something went wrong. Please try again.");
       }
